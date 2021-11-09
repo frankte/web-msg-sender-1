@@ -38,7 +38,10 @@ $sender_io->on('connection', function($socket){
         $socket->join($uid);
         $socket->uid = $uid;
         // 更新这个socket对应页面的在线数据
-        $socket->emit('update_online_count', "当前<b>{$last_online_count}</b>人在线，共打开<b>{$last_online_page_count}</b>个页面");
+//        $socket->emit('update_online_count', "当前<b>{$last_online_count}</b>人在线，共打开<b>{$last_online_page_count}</b>个页面");
+        $res=['type'=>'login','data'=>['uid'=>$uid],'status'=>1];
+        $socket->emit('RECEIVE_SERVER_MESSAGE', htmlspecialchars(json_encode($res)));
+
     });
     
     // 当客户端断开连接是触发（一般是关闭网页或者跳转刷新导致）
@@ -73,10 +76,10 @@ $sender_io->on('workerStart', function(){
                 $post['content'] = htmlspecialchars(@$post['content']);
                 // 有指定uid则向uid所在socket组发送数据
                 if($to){
-                    $sender_io->to($to)->emit('new_msg', $post['content']);
+                    $sender_io->to($to)->emit('RECEIVE_SERVER_MESSAGE', $post['content']);
                 // 否则向所有uid推送数据
                 }else{
-                    $sender_io->emit('new_msg', @$post['content']);
+                    $sender_io->emit('RECEIVE_SERVER_MESSAGE', @$post['content']);
                 }
                 // http接口返回，如果用户离线socket返回fail
                 if($to && !isset($uidConnectionMap[$to])){
